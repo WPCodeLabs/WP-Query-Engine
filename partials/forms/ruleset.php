@@ -18,6 +18,10 @@ printf( '<label for="%s[]">%s:</label>', $this->get_field_name( $name ), $atts['
 
 printf( '<div class="rulesets" data-ruleset-index="%d">', count( $atts['value'] ) );
 
+if( empty( $atts['value'] ) ) {
+	printf( '<p class="alert notice">No rules have been created yet</p>' );
+}
+
 foreach( $atts['value'] as $index => $rule ) {
 
 	// Parse rule for defaults

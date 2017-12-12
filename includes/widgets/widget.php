@@ -48,14 +48,8 @@ class Widget extends \WP_Widget {
 			'posts_per_page' => array(
 				'type'        => 'number',
 				'label'       => __( 'Posts Per Page', 'wpcl_query_engine' ),
-				'description' => __( 'The number of posts to show. Set to -1 to show all.', 'wpcl_query_engine' ),
+				'description' => __( 'The number of posts to show. Set to -1 to show all, or 0 to use the default', 'wpcl_query_engine' ),
 				'value'       => get_option( 'posts_per_page' ),
-			),
-			'pagination' => array(
-				'type'        => 'checkbox',
-				'label'       => 'Use Pagination?',
-				'description' => null,
-				'value'       => 'true',
 			),
 			'ignore_sticky_posts' => array(
 				'type'        => 'checkbox',
@@ -79,7 +73,7 @@ class Widget extends \WP_Widget {
 			),
 			'template' => array(
 				'type'        => 'select',
-				'label'       => 'Order',
+				'label'       => 'Template',
 				'description' => null,
 				'value'       => null,
 				'options'     => \WPCL\QueryEngine\Output::get_template_names(),
@@ -167,6 +161,10 @@ class Widget extends \WP_Widget {
 				'selector' => sanitize_text_field( $rule['selector'] ),
 			);
 		}
+		// Update option in database for pagination requests
+		$saved = get_option( 'wpcl_query_engine_widgets', array() );
+		// Add this instance
+		$saved[$this->id] = $this->format_query( $instance );
 		// Return values
 		return $instance;
 	}
@@ -194,6 +192,16 @@ class Widget extends \WP_Widget {
 		/**
 		 * Format Query
 		 */
+		$query = $this->format_query( $instance );
+		/**
+		 * Do Output
+		 */
+		do_action( 'wpcl_query_engine', $query );
+		// Display after widgets args
+		echo $after_widget;
+	} // end widget()
+
+	private function format_query( $instance ) {
 		$query = array(
 			'posts_per_page'      => intval( $instance['posts_per_page'] ),
 			'pagination'          => $instance['pagination'],
@@ -218,13 +226,8 @@ class Widget extends \WP_Widget {
 					break;
 			}
 		}
-		/**
-		 * Do Output
-		 */
-		do_action( 'wpcl_query_engine', $query );
-		// Display after widgets args
-		echo $after_widget;
-	} // end widget()
+		return $query;
+	}
 
 	private function format_category_rule( $rule, $query ) {
 		// Get the key

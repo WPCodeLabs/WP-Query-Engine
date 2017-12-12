@@ -19,7 +19,7 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		return array(
 			array( 'wpcl_query_engine_output' => 'do_output' ),
 			array( 'wpcl_query_engine' => 'do_action_callback' ),
-			array( 'wp_enqueue_scripts' => 'enqueue_scripts' ),
+			// array( 'wp_enqueue_scripts' => 'enqueue_scripts' ), // Not enqueing scripts at this time
 		);
 	}
 
@@ -47,7 +47,7 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		// Register all public scripts, including dependencies
 		wp_register_script( sprintf( '%s_public', self::$name ), self::url( 'scripts/public.js' ), array( 'jquery' ), self::$version, true );
 		// Enqueue public script
-		if( is_active_widget( '', '', 'wp_query_engine' ) ) {
+		if( is_active_widget( '', '', 'wpcl_query_engine' ) ) {
 			wp_enqueue_script( sprintf( '%s_public', self::$name ) );
 		}
 	}
