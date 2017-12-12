@@ -1,0 +1,47 @@
+# Hidden files
+*.DS_Store
+*Thumbs.db
+*.sass-cache*
+*~imageoptim*
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.bz2
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.tgz
+# Logs and databases #
+######################
+*.log
+*.sql
+error_log
+# Generated files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+._*
+*.orig
+*.map
+.sass-cache
+# Editor generated files #
+######################
+*.un~
+*.idea
+*.sublime-project
+*.sublime-workspace
+# codekit #
+##########
+config.codekit
+.codekit-cache/
+# dev dependencies #
+####################
+node_modules
+# Other #
+####################

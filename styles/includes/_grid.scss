@@ -1,0 +1,146 @@
+/* -----------------------------------------------------------------------------
+ *                              ______     _     __
+ *                             / ____/____(_)___/ /
+ *                            / / __/ ___/ / __  /
+ *                           / /_/ / /  / / /_/ /
+ *                           \____/_/  /_/\__,_/
+ *          Grid System: .base -> .xs -> .sm -> .md -> .lg -> .xl
+ * ---------------------------------------------------------------------------*/
+ @mixin grid( $size ) {
+     [class*="#{$size}"] {
+         &.column, &.col, &.columns, &.cols {
+             float : left;
+             &:last-child, .last { float: right; }
+             &.end { float: left; } // keeps last child from getting float: right
+         }
+     }
+     .column, .col, .columns, .cols {
+        @for $i from 0 through $gridcols {
+            &.#{$size}-#{$i} {
+                width: percentage( $i / $gridcols );
+            }
+            &.#{$size}-push-#{$i} {
+                position: relative;
+                left: percentage( $i / $gridcols );
+                right: auto;
+            }
+            &.#{$size}-pull-#{$i} {
+                position: relative;
+                right: percentage( $i / $gridcols);
+                left: auto;
+            }
+            &.#{$size}-offset-#{$i} {
+                margin-left: percentage( $i / $gridcols );
+            }
+        }
+         &.#{$size}-reset-order {
+             float: left;
+             left: auto;
+             right: auto;
+             margin-left: 0;
+             margin-right: 0;
+         }
+         &.#{$size}-centered {
+             margin-left: auto;
+             margin-right: auto;
+             float: none;
+         }
+         &.#{$size}-uncentered {
+             float: left;
+             margin-left: 0;
+             margin-right: 0;
+         }
+         &.#{$size}-end { float: left; } // keeps last child from getting float: right
+         &.#{$size}-centered:last-child { float: none; } // keep last-child from getting float: right
+         &.#{$size}-uncentered:last-child { float: left; } // keep last-child from getting float: right
+         &.#{$size}-uncentered.opposite { float: right; }
+         .row {
+             &.#{$size}-collapse > .column {
+                 padding-right: 0;
+                 padding-left: 0;
+             }
+             &.#{$size}-collapse .row {
+                 margin-left: 0;
+                 margin-right: 0;
+             }
+             &.#{$size}-uncollapse > .column {
+                 padding-right: $gutter;
+                 padding-left: $gutter;
+             }
+         } // end .row collapse
+     }
+ }
+
+.row, .grid {
+    margin: 0;
+    margin-left: 0 - $gutter;
+    margin-right: 0 - $gutter;
+    padding: 0;
+    box-sizing: border-box;
+    @include clearfix;
+    &.collapse > .column, &.collapse > .col, &.collapse > .cols, &.collapse > .columns {
+        padding-right: 0;
+        padding-left: 0;
+    }
+    &.collapse > .uncollapse {
+        padding-right: $gutter;
+        padding-left: $gutter;
+    }
+    &.inline {
+        > .column, > .columns, > .col, > .cols {
+            display: inline-block;
+            vertical-align: top;
+        }
+    }
+}
+ // Remove margin for grid
+.grid {
+    margin: 0;
+}
+ // Some flexbox stuff
+.flexbox { // class from modernizr.js, on html element
+    .row, .grid {
+        &.flexwrap, &.flexrow {
+            @include flexbox( 'row' );
+            &:before, &:after {
+                content: initial;
+            }
+            &.centered {
+                justify-content: center;
+            }
+        }
+        &.flexwrap {
+            flex-wrap: wrap;
+        }
+        .flexcol {
+        	@include flexbox();
+        	> div {
+        		display: block;
+        		flex: 1;
+        	}
+        }
+    }
+}
+
+.column, .col, .columns, .cols {
+    padding-right: $gutter;
+    padding-left: $gutter;
+    display: block;
+    width: 100%;
+    float: none;
+    box-sizing: border-box;
+    &.collapse {
+        padding-right: 0;
+        padding-left: 0;
+    }
+} // end .column
+
+// Base Grid
+@include grid( 'base' );
+
+// Iterate over our breakpoint map to create the grid
+@each $breakpoint, $size in $breakpoints {
+    @include breakpoint( $breakpoint ) {
+        @include grid( $breakpoint );
+    }
+}
