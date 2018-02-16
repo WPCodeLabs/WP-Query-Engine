@@ -19,7 +19,6 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		return array(
 			array( 'wpcl_query_engine_output' => array( 'do_output', 10, 4 ) ),
 			array( 'wpcl_query' => 'do_action_callback' ),
-			// array( 'wp_enqueue_scripts' => 'enqueue_scripts' ), // Not enqueing scripts at this time
 		);
 	}
 
@@ -50,7 +49,6 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		if( isset( $atts['tax_query'] ) && !empty( $atts['tax_query'] ) ) {
 			$atts['tax_query'] = $this->format_tax_query_array( (array)$atts['tax_query'] );
 		}
-
 		// Get query instance
 		$query = \WPCL\QueryEngine\Query::get_instance();
 		// Do the query
@@ -185,7 +183,6 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		if( !isset( $template ) ) {
 			$template = $all_templates['Default'];
 		}
-		// var_dump($template);
 		// Return with filter that allows themes to force a template
 		return $template;
 	}
@@ -215,7 +212,7 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 
 	public function pagination_redirect( $redirect_url ) {
 		global $post;
-		if( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wpcl_query_engine') ) {
+		if( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wpcl_query') ) {
 			return false;
 		}
 		return $redirect_url;

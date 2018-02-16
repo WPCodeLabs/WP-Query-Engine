@@ -68,23 +68,6 @@ function wpcl_query_engine_get_plugin_file() {
 }
 
 /**
- * Activation function
- * Currently we aren't doing anything during activation, but leaving this stub
- * here for future ease of implementation
- */
-function activate_wpcl_query_engine() {
-}
-
-/**
- * Deactivation function
- * Currently we aren't doing anything during deactivate, but leaving this stub
- * here for future ease of implementation
- */
-// function deactivate_wpcl_query_engine() {
-
-// }
-
-/**
  * Kick off the plugin
  * Check PHP version and make sure our other funcitons will be supported
  * Register autoloader function
@@ -102,13 +85,9 @@ function run_wpcl_query_engine() {
 	}
 	// Register Autoloader
 	spl_autoload_register( 'wpcl_query_engine_autoload_register' );
-	// Register activation hook
-	register_activation_hook( __FILE__, 'activate_wpcl_query_engine' );
 	// Register our output class
 	call_user_func( array( '\\WPCL\\QueryEngine\\Output', 'register' ) );
 	// Register Advanced Custom Fields Support
 	call_user_func( array( '\\WPCL\\QueryEngine\\Acf', 'register' ) );
-
-	// call_user_func( array( '\\WPCL\\QueryEngine\\Widgets', 'register' ) );
 }
 run_wpcl_query_engine();
