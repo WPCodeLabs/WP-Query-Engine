@@ -17,8 +17,8 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 	 */
 	public static function get_actions() {
 		return array(
-			array( 'wpcl_query_engine_output' => 'do_output' ),
-			array( 'wpcl_query_engine' => 'do_action_callback' ),
+			array( 'wpcl_query_engine_output' => array( 'do_output', 10, 4 ) ),
+			array( 'wpcl_query' => 'do_action_callback' ),
 			// array( 'wp_enqueue_scripts' => 'enqueue_scripts' ), // Not enqueing scripts at this time
 		);
 	}
@@ -39,32 +39,115 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 	 */
 	public static function get_shortcodes() {
 		return array(
-			array( 'wpcl_query_engine' => 'do_shortcode_callback' ),
+			array( 'wpcl_query' => 'do_shortcode_callback' ),
 		);
 	}
 
-	public function enqueue_scripts() {
-		// Register all public scripts, including dependencies
-		wp_register_script( sprintf( '%s_public', self::$name ), self::url( 'scripts/public.js' ), array( 'jquery' ), self::$version, true );
-		// Enqueue public script
-		if( is_active_widget( '', '', 'wpcl_query_engine' ) ) {
-			wp_enqueue_script( sprintf( '%s_public', self::$name ) );
-		}
-	}
-
 	public function do_action_callback( $atts = array() ) {
-		$query = new \WPCL\QueryEngine\Query();
+		// Make sure we have an array
+		$atts = (array)$atts;
+		// Format the tax query array
+		if( isset( $atts['tax_query'] ) && !empty( $atts['tax_query'] ) ) {
+			$atts['tax_query'] = $this->format_tax_query_array( (array)$atts['tax_query'] );
+		}
+
+		// Get query instance
+		$query = \WPCL\QueryEngine\Query::get_instance();
+		// Do the query
 		$query->do_query( $atts );
 	}
 
 	public function do_shortcode_callback( $atts = array() ) {
+		// Make sure we have an array
+		$atts = (array)$atts;
+		// Parse shortcode arguments for tax queries
+		$atts['tax_query'] = $this->tax_query_from_string();
+		// Get query instance
+		$query = \WPCL\QueryEngine\Query::get_instance();
+		// Open the output buffer
 		ob_start();
-		$this->do_action_callback( $atts );
+		// Do the query
+		$query->do_query( $atts );
+		// Return the content
 		return ob_get_clean();
 	}
 
-	public function do_output( $template_name ) {
+	protected function format_tax_query_array( $tax_query = array() ) {
+		// Don't waste the effort if we don't need to
+		if( !is_array( $tax_query ) || empty( $tax_query ) ) {
+			return array();
+		}
+		$formatted = array();
+		// Loop through each tax_query
+		foreach( $tax_query as $index => $query ) {
+
+			// Set default
+			$temp = array(
+				'taxonomy' => null,
+				'operator' => 'IN',
+				'terms' => array(),
+			);
+			// If we already have what we need
+			if( is_numeric( $index ) ) {
+				$temp = wp_parse_args( $query, $temp );
+			}
+			// Else see if the index is a taxonomy
+			else if( taxonomy_exists( $index ) ) {
+				$temp = wp_parse_args( $query, $temp );
+				$temp['taxonomy'] = $index;
+			}
+			// Make sure we have everything we need
+			if( empty( $temp['taxonomy'] ) || empty( $temp['terms'] ) ) {
+				continue;
+			}
+			// Add the tax_query
+			$formatted[] = $temp;
+		}
+		return $formatted;
+	}
+
+	protected function tax_query_from_string( $atts = array() ) {
+		// Get default attributes
+		$defaults = \WPCL\QueryEngine\Query::get_default_attributes();
+		// Setup Tax Queries
+		$tax_queries = array();
+		// Construct unknowns as tax query
+		foreach( $atts as $attr_name => $attr_value ) {
+			// We only want unknowns
+			if( array_key_exists( $attr_name, $defaults ) ) {
+				continue;
+			}
+			// if it's a taxonomy already being handled elsewhere, bail
+			if( in_array( strtolower( $attr_name ), array( 'category', 'post_tag', 'tag', 'author' ) ) ) {
+				continue;
+			}
+			// Set default
+			$temp = array(
+				'taxonomy' => $attr_name,
+				'operator' => 'IN',
+				'terms' => $attr_value,
+			);
+			// Look for not operator
+			if( strpos( $attr_name, '__not_in' ) !== false ) {
+				$temp['taxonomy'] = str_replace( '__not_in', '', $attr_name );
+				$temp['operator'] = 'NOT IN';
+			}
+			// Look for in operator
+			else if( strpos( $attr_name, '__in' ) !== false ) {
+				$temp['taxonomy'] = str_replace( '__in', '', $attr_name );
+			}
+			// If it's a taxonomy that exists
+			if( taxonomy_exists( $temp['taxonomy'] ) ) {
+				$tax_queries[] = $temp;
+			}
+		}
+		return $tax_queries;
+	}
+
+	public function do_output( $template_name, $context, $wp_query, $atts ) {
+		// Get the template
 		$template = $this->get_template_file( $template_name );
+		// do pre include action
 		if( isset( $template ) && file_exists( $template ) ) {
 			include $template;
 		}
@@ -121,7 +204,7 @@ class Output extends \WPCL\QueryEngine\Common\Plugin implements \WPCL\QueryEngin
 		return $templates;
 	}
 
-	public function get_template_names() {
+	public static function get_template_names() {
 		$templates = self::get_templates();
 		$templates_names = array();
 		foreach( $templates as $name => $path ) {

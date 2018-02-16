@@ -16,7 +16,7 @@
  * Author URI:  http://www.wpcodelabs.com
  * License:     GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain: wp_query_engine
+ * Text Domain: wpcl_query_engine
  */
 
 define( 'WPCL_QUERY_ENGINE_PLUGIN', __FILE__ );
@@ -34,7 +34,7 @@ if ( !defined( 'WPINC' ) ) {
  * @see http://php.net/manual/en/function.spl-autoload-register.php
  * @param (string) $className : fully qualified classname to load
  */
-function wp_query_engine_autoload_register( $className ) {
+function wpcl_query_engine_autoload_register( $className ) {
 	// Reject it if not a string
 	if( !is_string( $className ) ) {
 		return false;
@@ -63,7 +63,7 @@ function wp_query_engine_autoload_register( $className ) {
  * Small helper function to get main plugin file
  * @since 1.0.0
  */
-function wp_query_engine_get_plugin_file() {
+function wpcl_query_engine_get_plugin_file() {
 	return __FILE__;
 }
 
@@ -72,7 +72,7 @@ function wp_query_engine_get_plugin_file() {
  * Currently we aren't doing anything during activation, but leaving this stub
  * here for future ease of implementation
  */
-function activate_wp_query_engine() {
+function activate_wpcl_query_engine() {
 }
 
 /**
@@ -80,7 +80,7 @@ function activate_wp_query_engine() {
  * Currently we aren't doing anything during deactivate, but leaving this stub
  * here for future ease of implementation
  */
-// function deactivate_wp_query_engine() {
+// function deactivate_wpcl_query_engine() {
 
 // }
 
@@ -92,7 +92,7 @@ function activate_wp_query_engine() {
  * Create an install of our controller
  * Finally, Burn Baby Burn...
  */
-function run_wp_query_engine() {
+function run_wpcl_query_engine() {
 	// If version is less than minimum, register notice
 	if( version_compare( '5.3.0', phpversion(), '>=' ) ) {
 		// Deactivate plugin
@@ -101,12 +101,14 @@ function run_wp_query_engine() {
 		wp_die( 'Irks! WP Query Engine requires minimum PHP v5.3.0 to run. Please update your version of PHP.' );
 	}
 	// Register Autoloader
-	spl_autoload_register( 'wp_query_engine_autoload_register' );
+	spl_autoload_register( 'wpcl_query_engine_autoload_register' );
 	// Register activation hook
-	register_activation_hook( __FILE__, 'activate_wp_query_engine' );
+	register_activation_hook( __FILE__, 'activate_wpcl_query_engine' );
 	// Register our output class
 	call_user_func( array( '\\WPCL\\QueryEngine\\Output', 'register' ) );
+	// Register Advanced Custom Fields Support
+	call_user_func( array( '\\WPCL\\QueryEngine\\Acf', 'register' ) );
 
-	call_user_func( array( '\\WPCL\\QueryEngine\\Widgets', 'register' ) );
+	// call_user_func( array( '\\WPCL\\QueryEngine\\Widgets', 'register' ) );
 }
-run_wp_query_engine();
+run_wpcl_query_engine();

@@ -1,0 +1,41 @@
+@import 'includes/variables';
+@import 'includes/mixins';
+
+.wpcl_query_field {
+	margin-bottom: 10px;
+}
+
+.wpcl_query_fields {
+	label, .label {
+		margin-bottom: 5px;
+	    display: block;
+	    text-indent: 2px;
+	    font-weight: 600;
+	}
+}
+
+.wpcl-notice {
+	padding: 10px;
+}
+
+.wpcl_rules_wrapper {
+	padding: 1em;
+	background: #f9f9f9;
+	border: 1px dotted #e9e9e9;
+	.wpcl_rule_fieldset {
+		@include flexbox('row');
+		.wpcl_query_field {
+			display: block;
+			padding: 0 5px;
+			&.fill {
+				flex: 1;
+			}
+			&:first-child {
+				padding-left: 0;
+			}
+			&:last-child {
+				padding-right: 0;
+			}
+		}
+	}
+}
