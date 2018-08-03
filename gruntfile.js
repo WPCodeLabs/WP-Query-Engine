@@ -17,24 +17,14 @@ module.exports = function(grunt) {
         compass : {
             production : {
                 options : {
-                    sassDir     : 'styles',
-                    cssDir      : 'styles/temp',
+                    sassDir     : 'src/styles',
+                    cssDir      : 'assets/css',
                     outputStyle : 'compressed',
-                    cacheDir    : 'styles/.sass-cache',
+                    cacheDir    : 'src/styles/.sass-cache',
                     environment : 'production',
                     sourcemap   : true
                 },
-            },
-            development : {
-                options : {
-                    sassDir     : 'styles',
-                    cssDir      : 'styles/temp',
-                    cacheDir    : 'styles/.sass-cache',
-                    environment : 'development',
-                    outputStyle : 'expanded',
-                    sourcemap   : true
-                },
-            },
+            }
         },
         postcss: {
             options: {
@@ -45,18 +35,9 @@ module.exports = function(grunt) {
                 require('cssnano')() // minify the result
               ]
             },
-            public : {
-                src  : 'styles/temp/style.css',
-                dest : 'style.css'
-            },
-            admin : {
-                src  : 'styles/temp/admin.css',
-                dest : 'styles/dist/admin.min.css'
+            dist: {
+                src: 'assets/css/*.css'
             }
-        },
-        // Clean temp files
-        clean: {
-          temp_css: ['styles/temp/'],
         },
         // JSHint - Check Javascript for errors
         jshint : {
@@ -66,7 +47,7 @@ module.exports = function(grunt) {
                 },
                 smarttabs : true,
             },
-            all : [ 'Gruntfile.js', 'scripts/**/*.js', '!scripts/dist/*.js', '!scripts/vendors/*.js' ],
+            all: ['Gruntfile.js', 'src/scripts/**/*.js', '!assets/scripts/*.js', '!src/scripts/vendors/**/*.js'],
         },
         // Combine & minify JS
         uglify : {
@@ -75,12 +56,12 @@ module.exports = function(grunt) {
             },
             public : {
                 files : {
-                    'scripts/dist/public.min.js' : [ 'scripts/public.js' ]
+                    'assets/js/public.min.js' : [ 'src/scripts/vendors/jquery.waypoints.js', 'src/scripts/vendors/inview.js', 'src/scripts/includes/jquery.jumpscroll.js', 'src/scripts/includes/jquery.scrollview.js', 'src/scripts/includes/jquery.scrolltoggle.js', 'src/scripts/public.js' ]
                 }
             },
             admin : {
                 files : {
-                    'scripts/dist/admin.min.js' : [ 'scripts/admin.js' ]
+                    'assets/js/admin.min.js' : [ 'src/scripts/admin.js' ]
                 }
             }
         },
@@ -91,15 +72,15 @@ module.exports = function(grunt) {
               livereload: true,
             },
             cssPostProcess : {
-                files : 'styles/**/*.scss',
-                tasks : [ 'compass:development', 'newer:postcss', 'clean' ]
+                files : 'src/styles/**/*.scss',
+                tasks : [ 'compass:production', 'newer:postcss' ]
             },
             jsPostProcess : {
-                files : [ 'scripts/**/*.js', '!scripts/dist/*.js' ],
+                files : [ 'src/scripts/**/*.js' ],
                 tasks : [ 'newer:jshint', 'uglify' ],
             },
             livereload : {
-                files   : [ 'styles/dist*.css', 'scripts/dist/*.js', '*.html', 'images/*', '*.php' ],
+                files   : [ 'assets/css/*.css', 'assets/js/*.js', '*.html', 'assets/images/*', '*.php' ],
             },
         },
     });

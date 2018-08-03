@@ -6,7 +6,37 @@
 
 namespace WPCL\QueryEngine;
 
-class Loader extends \WPCL\QueryEngine\Common\Singleton  {
+class Loader {
+
+	/**
+	 * Instances
+	 * @since 1.0.0
+	 * @access protected
+	 * @var (array) $instances : Collection of instantiated classes
+	 */
+	protected static $instances = array();
+
+	/**
+	 * Gets an instance of our class.
+	 */
+	public static function get_instance( $params = null ) {
+		// Use late static binding to get called class
+		$class = get_called_class();
+		// Get instance of class
+		if( !isset(self::$instances[$class] ) ) {
+			self::$instances[$class] = new $class();
+		}
+		return self::$instances[$class];
+	}
+
+	/**
+	 * Constructor
+	 * Though shall not construct that which cannot be constructed
+	 * @access private
+	 */
+	protected function __construct() {
+		// Nothing to do here right now
+	}
 
 	/**
 	 * Registers an object with the WordPress Plugin API.
@@ -34,14 +64,27 @@ class Loader extends \WPCL\QueryEngine\Common\Singleton  {
 	 * @param mixed $parameters
 	 */
 	private function register_action( \WPCL\QueryEngine\Interfaces\Action_Hook_Subscriber $object, $name, $parameters ) {
-
+		// For string params
 		if( is_string( $parameters ) ) {
-
-			add_action( $name, array( $object, $parameters ) );
+			// If a class method
+			if( method_exists( $object, $parameters ) ) {
+				add_action( $name, array( $object, $parameters ) );
+			}
+			// Else if a standard wordpress function
+			else if( function_exists( $parameters ) ) {
+				add_action( $name, $parameters );
+			}
 		}
-
+		// For array of params (name, priority, args)
 		elseif( is_array( $parameters ) && isset( $parameters[0] ) ) {
-			add_action( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			// If a class method
+			if( method_exists( $object, $parameters[0] ) ) {
+				add_action( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			}
+			// Else if a standard wordpress function
+			else if( function_exists( $parameters[0] ) ) {
+				add_action( $name, $parameters[0], isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			}
 		}
 	}
 
@@ -65,12 +108,27 @@ class Loader extends \WPCL\QueryEngine\Common\Singleton  {
 	 */
 	private function register_filter( \WPCL\QueryEngine\Interfaces\Filter_Hook_Subscriber $object, $name, $parameters ) {
 
-		if( is_string($parameters)) {
-			add_filter($name, array($object, $parameters));
+		// For string params
+		if( is_string( $parameters ) ) {
+			// If a class method
+			if( method_exists( $object, $parameters ) ) {
+				add_filter( $name, array( $object, $parameters ) );
+			}
+			// Else if a standard wordpress function
+			else if( function_exists( $parameters ) ) {
+				add_filter( $name, $parameters );
+			}
 		}
-
+		// For array of params (name, priority, args)
 		elseif( is_array( $parameters ) && isset( $parameters[0] ) ) {
-			add_filter( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			// If a class method
+			if( method_exists( $object, $parameters[0] ) ) {
+				add_filter( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			}
+			// Else if a standard wordpress function
+			else if( function_exists( $parameters[0] ) ) {
+				add_filter( $name, $parameters[0], isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
+			}
 		}
 	}
 
@@ -94,8 +152,15 @@ class Loader extends \WPCL\QueryEngine\Common\Singleton  {
 	 * @param mixed                           $parameters
 	 */
 	private function register_shortcode( \WPCL\QueryEngine\Interfaces\Shortcode_Hook_Subscriber $object, $name, $parameters ) {
-		if( is_string( $parameters )) {
-			add_shortcode( $name, array( $object, $parameters ) );
+		if( is_string( $parameters ) ) {
+			// If a class method
+			if( method_exists( $object, $parameters ) ) {
+				add_shortcode( $name, array( $object, $parameters ) );
+			}
+			// Else if a standard wordpress function
+			else if( function_exists( $parameters ) ) {
+				add_shortcode( $name, $parameters );
+			}
 		}
 	}
 
