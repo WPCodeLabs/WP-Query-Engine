@@ -97,11 +97,11 @@ class QueryEngine extends \FLBuilderModule {
 	    foreach( $taxonomies as $tax ) {
 	    	if( isset( $settings->{"tax__{$tax}"} ) && isset( $settings->{"tax__{$tax}_matching"} ) ) {
 	    		// Set to match terms
-	    		if( $settings->{"tax__{$tax}_matching"} === 1 && !empty( $settings->{"tax__{$tax}"} ) ) {
+	    		if( intval( $settings->{"tax__{$tax}_matching"} ) === 1 && !empty( $settings->{"tax__{$tax}"} ) ) {
 	    			$settings->atts["{$tax}__in"] = $settings->{"tax__{$tax}"};
 	    		}
 	    		// Set NOT to match
-	    		else if( $settings->{"tax__{$tax}_matching"} === 0  && !empty( $settings->{"tax__{$tax}"} ) ) {
+	    		else if( intval( $settings->{"tax__{$tax}_matching"} ) === 0  && !empty( $settings->{"tax__{$tax}"} ) ) {
 	    			$settings->atts["{$tax}__not_in"] = $settings->{"tax__{$tax}"};
 	    		}
 	    		// Set to related
