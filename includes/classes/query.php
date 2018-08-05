@@ -111,10 +111,10 @@ class Query extends \WPCL\QueryEngine\Plugin {
 		);
 
 		// some conditionalls
-		if( isset( $atts['meta_key'] ) && $atts['orderby'] === 'meta_value' ) {
+		if( isset( $atts['meta_key'] ) && ( $atts['orderby'] === 'meta_value' || $atts['orderby'] === 'meta_value_num' ) ) {
 			$query_args['meta_key'] = $atts['meta_key'];
 		}
-		if( isset( $atts['meta_type'] ) && $atts['orderby'] === 'meta_value' ) {
+		if( isset( $atts['meta_type'] ) && ( $atts['orderby'] === 'meta_value' || $atts['orderby'] === 'meta_value_num' ) ) {
 			$query_args['meta_type'] = $atts['meta_type'];
 		}
 
@@ -194,32 +194,50 @@ class Query extends \WPCL\QueryEngine\Plugin {
 	public static function do_query( $atts ) {
 		// Normalize the atts
 		$atts = self::normalize_atts( $atts );
+
 		// Get the global query
 		global $wp_query;
+
 		// Set temporary variable to the global for restoration when we are done
 		$original_query = $wp_query;
+
 		// Null the global
 		$wp_query = null;
+
 		// Allow atts to be prefilterd
 		$atts = apply_filters( 'wp_query_engine_args_raw', $atts );
+
 		// Get query args
 		$query_args = apply_filters( 'wp_query_engine_args', self::get_query_args( $atts ) );
+
 		// Construct query
 		$wp_query = new \WP_Query( $query_args );
+
 		// Do before output action
 		do_action( 'wp_query_engine_before_output', $wp_query, $atts );
+
 		// Context sensistive before action
-		do_action( "wp_query_engine_before_{$atts['context']}", $wp_query, $atts );
+		if( !empty( $atts['context'] ) ) {
+			do_action( "wp_query_engine_before_{$atts['context']}", $wp_query, $atts );
+		}
+
 		// Do output action
 		do_action( 'wp_query_engine_output', $atts['template'], $atts['context'], $wp_query, $atts );
+
 		// Context sensistive after action
-		do_action( "wp_query_engine_after_{$atts['context']}", $wp_query, $atts );
+		if( !empty( $atts['context'] ) ) {
+			do_action( "wp_query_engine_after_{$atts['context']}", $wp_query, $atts );
+		}
+
 		// Do after output action
 		do_action( 'wp_query_engine_after_output', $wp_query, $atts );
+
 		// Restore original Post Data
 		wp_reset_postdata();
+
 		// Restore the original query data
 		wp_reset_query();
+
 		// Reset Query
 		$wp_query = $original_query;
 	}

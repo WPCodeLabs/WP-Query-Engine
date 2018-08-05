@@ -270,8 +270,6 @@ class Utilities {
 		// Get Taxonomies
 		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
 
-
-
 		foreach( $taxonomies as $taxonomy ) {
 			// Empty choices array
 			$choices = array();

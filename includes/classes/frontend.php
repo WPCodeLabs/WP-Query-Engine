@@ -74,16 +74,16 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 
 	public function do_output( $template_name, $context, $wp_query, $atts ) {
 		// Get the template
-		$template = $this->get_template_file( $template_name );
+		$template = $this->get_template_file( $template_name, $context );
 		// do pre include action
 		if( isset( $template ) && file_exists( $template ) ) {
 			include $template;
 		}
 	}
 
-	private function get_template_file( $template_name ) {
+	private function get_template_file( $template_name, $context = '' ) {
 		// Allow themes to force a template in certain scenarios
-		$template_name = apply_filters( 'wp_query_engine_template', $template_name );
+		$template_name = apply_filters( 'wp_query_engine_template', $template_name, $context );
 		// Get all templates
 		$all_templates = self::get_templates();
 		// tack on all lowercase version
@@ -120,13 +120,15 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 	public static function get_templates() {
 		// Set up defaults
 		$default_templates = array(
-			'Default' => 'genesis' === basename( TEMPLATEPATH ) ? self::path( 'templates/genesis.php' ) : self::path( 'templates/default.php' ),
+			'Default' => self::path( 'templates/default.php' ),
 			'List'    => self::path( 'templates/list.php' ),
 		);
+		// Add standard genesis loop file
+		if( 'genesis' === basename( TEMPLATEPATH ) ) {
+			$default_templates['Genesis Loop'] = self::path( 'templates/genesis.php' );
+		}
 		// Allow themes / plugins / etc to add templates
-		$templates = apply_filters( 'wp_query_engine_templates', array() );
-		// Merge with default template, prepending default to the front of the array
-		$templates = wp_parse_args( $templates, $default_templates );
+		$templates = apply_filters( 'wp_query_engine_templates', $default_templates );
 		// Return
 		return $templates;
 	}

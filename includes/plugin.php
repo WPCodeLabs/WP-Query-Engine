@@ -26,7 +26,7 @@ class Plugin {
 	 * @access protected
 	 * @var (string) $version : The version number of the plugin, used to version scripts / styles
 	 */
-	protected static $version = '0.1.0';
+	protected static $version = '1.0.0';
 
 	/**
 	 * Plugin Path

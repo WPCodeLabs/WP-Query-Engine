@@ -24,6 +24,11 @@ class BeaverBuilder extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngin
 	}
 
 	public function setup_addon() {
-			new \WPCL\QueryEngine\Classes\BeaverBuilder\QueryEngine\QueryEngine();
+		if( class_exists( 'FLBuilder' ) ) {
+			// Instantiate our addon
+			$bbmodule = new \WPCL\QueryEngine\Classes\BeaverBuilder\QueryEngine();
+			// Register it with beaver builder
+			$bbmodule->register_module();
+		}
 	}
 } // end class

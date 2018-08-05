@@ -9,9 +9,9 @@
  *
  * @wordpress-plugin
  * Plugin Name: WP Query Engine
- * Plugin URI:  https://github.com/WPCodeLabs/WP-Query-Engine
- * Description: A plugin for querying and displaying any type of post from WordPress
- * Version:     0.2.0
+ * Plugin URI:  http://docs.wpcodelabs.com/wp-query-engine/
+ * Description: A plugin for querying and displaying any type of post from WordPress using a shortcode
+ * Version:     1.0.0
  * Author:      WP Code Labs
  * Author URI:  https://www.wpcodelabs.com
  * License:     GPL-2.0+
@@ -76,6 +76,8 @@ function run_wp_query_engine() {
 	}
 	// Register Autoloader
 	spl_autoload_register( 'wp_query_engine_autoload_register' );
+	// Load the text domain
+	load_plugin_textdomain( 'wp_query_engine', false, dirname( __FILE__ ) . '/languages/' );
 	// Instantiate our plugin
 	$plugin = \WPCL\QueryEngine\Plugin::get_instance();
 	// Test our plugin
