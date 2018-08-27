@@ -11,7 +11,7 @@
  * Plugin Name: WP Query Engine
  * Plugin URI:  http://docs.wpcodelabs.com/wp-query-engine/
  * Description: A plugin for querying and displaying any type of post from WordPress using a shortcode
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      WP Code Labs
  * Author URI:  https://www.wpcodelabs.com
  * License:     GPL-2.0+

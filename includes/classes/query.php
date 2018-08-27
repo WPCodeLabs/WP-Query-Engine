@@ -28,6 +28,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 			'ignore_sticky_posts' => true,
 			'orderby' => null,
 			'order' => null,
+			'offset' => 0,
 			'context' => null,
 			'post__in' => array(),
 			'post__not_in' => array(),
@@ -71,6 +72,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 		$atts['tax_query'] = $tax_queries;
 		// Do some cleanup
 		$atts['posts_per_page']      = intval( $atts['posts_per_page'] );
+		$atts['offset']              = intval( $atts['offset'] );
 		$atts['ignore_sticky_posts'] = Utilities::string_to_bool( $atts['ignore_sticky_posts'] );
 		$atts['pagination']          = Utilities::string_to_bool( $atts['pagination'] );
 		$atts['category__in']        = Utilities::string_to_term_id( $atts['category__in'], 'category' );
@@ -108,6 +110,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 			'tax_query' => $atts['tax_query'],
 			'meta_query' => $atts['meta_query'],
 			'post__in' => $atts['post__in'],
+			'offset' => $atts['offset'],
 		);
 
 		// some conditionalls
@@ -192,6 +195,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 	}
 
 	public static function do_query( $atts ) {
+
 		// Normalize the atts
 		$atts = self::normalize_atts( $atts );
 
@@ -201,12 +205,8 @@ class Query extends \WPCL\QueryEngine\Plugin {
 		// Set temporary variable to the global for restoration when we are done
 		$original_query = $wp_query;
 
-		// Null the global
-		$wp_query = null;
-
 		// Allow atts to be prefilterd
 		$atts = apply_filters( 'wp_query_engine_args_raw', $atts );
-
 		// Get query args
 		$query_args = apply_filters( 'wp_query_engine_args', self::get_query_args( $atts ) );
 

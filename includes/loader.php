@@ -14,19 +14,27 @@ class Loader {
 	 * @access protected
 	 * @var (array) $instances : Collection of instantiated classes
 	 */
-	protected static $instances = array();
+	protected static $instance = null;
 
 	/**
 	 * Gets an instance of our class.
 	 */
-	public static function get_instance( $params = null ) {
-		// Use late static binding to get called class
-		$class = get_called_class();
-		// Get instance of class
-		if( !isset(self::$instances[$class] ) ) {
-			self::$instances[$class] = new $class();
+	public static function get_instance( $caller = null ) {
+		/**
+		 * Check if in instance exists
+		 * Create one if not
+		 */
+		if( self::$instance === null ) {
+			self::$instance = new self();
 		}
-		return self::$instances[$class];
+		/**
+		 * Register the caller
+		 */
+		self::$instance->register( $caller );
+		/**
+		 * Return the intantiated instance
+		 */
+		return self::$instance;
 	}
 
 	/**
@@ -75,6 +83,7 @@ class Loader {
 				add_action( $name, $parameters );
 			}
 		}
+
 		// For array of params (name, priority, args)
 		elseif( is_array( $parameters ) && isset( $parameters[0] ) ) {
 			// If a class method
@@ -82,7 +91,7 @@ class Loader {
 				add_action( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
 			}
 			// Else if a standard wordpress function
-			else if( function_exists( $parameters[0] ) ) {
+			else {
 				add_action( $name, $parameters[0], isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
 			}
 		}
@@ -126,7 +135,7 @@ class Loader {
 				add_filter( $name, array( $object, $parameters[0] ), isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
 			}
 			// Else if a standard wordpress function
-			else if( function_exists( $parameters[0] ) ) {
+			else {
 				add_filter( $name, $parameters[0], isset( $parameters[1] ) ? $parameters[1] : 10, isset( $parameters[2] ) ? $parameters[2] : 1 );
 			}
 		}

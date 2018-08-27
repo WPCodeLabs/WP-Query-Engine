@@ -14,7 +14,6 @@ if( !function_exists( 'wp_query_list_content' ) ) {
 		echo apply_filters( 'wp_query_list_content_output', $content, $template_name, $context, $wp_query, $atts );
 	}
 }
-add_action( 'wp_query_list_content', 'wp_query_list_content', 10, 4 );
 
 /**
  * Wrap the UL tag
@@ -24,7 +23,6 @@ if( !function_exists( 'wp_query_list_content_wrap_open' ) ) {
 		echo '<ul class="wp_query_engine">';
 	}
 }
-add_action( 'wp_query_before_list_while', 'wp_query_list_content_wrap_open', 10, 4 );
 
 /**
  * Close the UL tag
@@ -34,7 +32,6 @@ if( !function_exists( 'wp_query_list_content_wrap_close' ) ) {
 		echo '</ul>';
 	}
 }
-add_action( 'wp_query_after_list_while', 'wp_query_list_content_wrap_close', 10, 4 );
 
 /**
  * Begin our main loop

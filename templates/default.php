@@ -6,12 +6,22 @@
 if( !function_exists( 'wp_query_default_content' ) ) {
 	function wp_query_default_content( $template_name, $context, $wp_query, $atts ) {
 
-		$content = apply_filters( 'the_content', get_the_content() );
+		ob_start();
 
-		echo apply_filters( 'wp_query_default_content_output', $content, $template_name, $context, $wp_query, $atts );
+		printf( '<header class="entry-header"><h2 class="entry-title"><a href="%s">%s</a></h2></header>',
+			get_the_permalink(),
+			get_the_title()
+			);
+
+		echo '<div class="entry-content">';
+
+		the_content();
+
+		echo '</div>';
+
+		echo apply_filters( 'wp_query_default_content_output', ob_get_clean(), $template_name, $context, $wp_query, $atts );
 	}
 }
-add_action( 'wp_query_default_content', 'wp_query_default_content', 10, 4 );
 
 /**
  * Wrap the content in article tag
@@ -24,7 +34,6 @@ if( !function_exists( 'wp_query_default_content_wrap_open' ) ) {
 		);
 	}
 }
-add_action( 'wp_query_default_content', 'wp_query_default_content_wrap_open', 5, 4 );
 
 /**
  * Close the article tag
@@ -34,7 +43,6 @@ if( !function_exists( 'wp_query_default_content_wrap_close' ) ) {
 		echo '</article>';
 	}
 }
-add_action( 'wp_query_default_content', 'wp_query_default_content_wrap_close', 15, 4 );
 
 /**
  * Begin our main loop

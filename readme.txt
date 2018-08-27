@@ -35,7 +35,7 @@ Further, theme developers can easily alter or override the default templates usi
 2. Use the do_action( 'wp_query', $args ); action hook anywhere in your theme
 3. Using the Beaver Builder Module
 
-You can see the full documentation and available arguments at https://docs.wpcodelabs.com/wp-query-engine
+You can see the full documentation and available arguments at [https://docs.wpcodelabs.com/wp-query-engine](https://docs.wpcodelabs.com/wp-query-engine)
 
 == Installation ==
 
@@ -67,10 +67,16 @@ You can see the full documentation and available arguments at https://docs.wpcod
 2. Use the do_action( 'wp_query', $args ); action hook anywhere in your theme
 3. Using the Beaver Builder Module
 
-You can see the full documentation available at https://docs.wpcodelabs.com/wp-query-engine
+You can see the full documentation available at [https://docs.wpcodelabs.com/wp-query-engine](https://docs.wpcodelabs.com/wp-query-engine)
 
 
 == Changelog ==
+
+= 1.0.1 =
+- Moved template action to class for easier override by templates
+- Removed function_exist call in loader, to fix conflict with loading order
+- Changed how $wp_query global was handled in main query to address bug with conditional calls
+- Added additional "Basic Archive" template
 
 = 1.0 =
 Initial Release

@@ -172,7 +172,7 @@ class QueryEngine extends \FLBuilderModule {
 		$fields['post_type'] = array(
 			'type'          => 'select',
 			'label'         => __( 'Post Type', 'fl-builder'),
-			'default'       => 'any',
+			'default'       => 'post',
 			'options'       => array(
 				'any' => __( 'Any', 'wpcl_query_engine' ),
 			),
@@ -196,13 +196,13 @@ class QueryEngine extends \FLBuilderModule {
 			);
 			// Expand all for 'any' post type
 			$fields['post_type']['toggle']['any']['fields'][] = "match__{$slug}";
+			// var_dump(get_object_taxonomies( $slug ));
 			// Add supported taxonomies
 			foreach( get_object_taxonomies( $slug ) as $tax ) {
 				$fields['post_type']['toggle'][$slug]['fields'][] = "tax__{$tax}";
 				// Expand all for 'any' post type
 				$fields['post_type']['toggle']['any']['fields'][] = "tax__{$tax}";
 			}
-
 		}
 
 		// Add single post selections
@@ -221,7 +221,13 @@ class QueryEngine extends \FLBuilderModule {
 		}
 		// Add taxonomies
 		foreach ( $post_types as $slug => $type ) {
-			foreach ( \FLBuilderLoop::taxonomies( $slug ) as $tax_slug => $tax ) {
+			// Get all taxonomies
+			$taxonomies = get_object_taxonomies( $slug );
+
+			foreach ( $taxonomies as $tax_slug ) {
+
+				$tax = get_taxonomy( $tax_slug );
+
 				$fields["tax__{$tax_slug}"] = array(
 					'type'          => 'suggest',
 					'action'        => 'fl_as_terms',

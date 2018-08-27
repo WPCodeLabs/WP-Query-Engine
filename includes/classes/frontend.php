@@ -32,6 +32,30 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 		return array(
 			array( 'wp_query_engine_output' => array( 'do_output', 10, 4 ) ),
 			array( 'wp_query' => 'do_action_callback' ),
+			/**
+			 * Default Template Actions
+			 *
+			 * Defined in templates/default.php
+			 */
+			array( 'wp_query_default_content' => array( 'wp_query_default_content_wrap_open', 5, 4 ) ),
+			array( 'wp_query_default_content' => array( 'wp_query_default_content', 10, 4 ) ),
+			array( 'wp_query_default_content' => array( 'wp_query_default_content_wrap_close', 15, 4 ) ),
+			/**
+			 * List Template Actions
+			 *
+			 * Defined in templates/list.php
+			 */
+			array( 'wp_query_list_content' => array( 'wp_query_list_content', 10, 4 ) ),
+			array( 'wp_query_before_list_while' => array( 'wp_query_list_content_wrap_open', 10, 4 ) ),
+			array( 'wp_query_after_list_while' => array( 'wp_query_list_content_wrap_close', 10, 4 ) ),
+			/**
+			 * Basic Archive Template Actions
+			 *
+			 * Defined in templates/basic-archive.php
+			 */
+			array( 'wp_query_basic_archive_content' => array( 'wp_query_basic_archive_content_wrap_open', 5, 4 ) ),
+			array( 'wp_query_basic_archive_content' => array( 'wp_query_basic_archive_content', 10, 4 ) ),
+			array( 'wp_query_basic_archive_content' => array( 'wp_query_basic_archive_content_wrap_close', 15, 4 ) ),
 		);
 	}
 
@@ -120,8 +144,9 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 	public static function get_templates() {
 		// Set up defaults
 		$default_templates = array(
-			'Default' => self::path( 'templates/default.php' ),
-			'List'    => self::path( 'templates/list.php' ),
+			'Default'       => self::path( 'templates/default.php' ),
+			'List'          => self::path( 'templates/list.php' ),
+			'Basic Archive' => self::path( 'templates/basic-archive.php' ),
 		);
 		// Add standard genesis loop file
 		if( 'genesis' === basename( TEMPLATEPATH ) ) {
