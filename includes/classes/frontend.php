@@ -32,6 +32,7 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 		return array(
 			array( 'wp_query_engine_output' => array( 'do_output', 10, 4 ) ),
 			array( 'wp_query' => 'do_action_callback' ),
+			array( 'wp_query_engine_output' => array( 'do_pagination', 20, 4 ) ),
 			/**
 			 * Default Template Actions
 			 *
@@ -96,16 +97,43 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 		return ob_get_clean();
 	}
 
-	public function do_output( $template_name, $context, $wp_query, $atts ) {
-		// Get the template
-		$template = $this->get_template_file( $template_name, $context );
+	public function do_output( $template_name, $context, $query, $atts ) {
+		$template_name = empty( $template_name ) ? 'Default' : $template_name;
+		// Get the template path
+		$template_path = $this->get_template_file( $template_name, $context );
+		// Do some correction of the template name
+		$template_name = strtolower( str_ireplace( ' ', '_', $template_name ) );
+		// Possibly add the pagination action
+		if( $atts['pagination'] === true ) {
+			add_action( 'wp_query_engine_output', array( $this, 'do_pagination' ), 20, 4 );
+		}
 		// do pre include action
-		if( isset( $template ) && file_exists( $template ) ) {
-			include $template;
+		if( isset( $template_path ) && file_exists( $template_path ) ) {
+			include $template_path;
+		}
+		// Maybe include loop
+		if( apply_filters( 'wp_query_include_loop', true ) ) {
+			include self::path( 'templates/loop.php' );
 		}
 	}
 
-	private function get_template_file( $template_name, $context = '' ) {
+	public static function do_pagination( $template_name, $context, $query, $atts ) {
+		if( $atts['pagination'] === true ) {
+			// Get the global query
+			global $wp_query;
+
+			$original_query = $wp_query;
+
+			$wp_query = $query;
+
+			the_posts_pagination();
+
+			$wp_query = $original_query;
+		}
+
+	}
+
+	private function get_template_file( $template_name = 'Default', $context = '' ) {
 		// Allow themes to force a template in certain scenarios
 		$template_name = apply_filters( 'wp_query_engine_template', $template_name, $context );
 		// Get all templates
@@ -146,7 +174,6 @@ class FrontEnd extends \WPCL\QueryEngine\Plugin implements \WPCL\QueryEngine\Int
 		$default_templates = array(
 			'Default'       => self::path( 'templates/default.php' ),
 			'List'          => self::path( 'templates/list.php' ),
-			'Basic Archive' => self::path( 'templates/basic-archive.php' ),
 		);
 		// Add standard genesis loop file
 		if( 'genesis' === basename( TEMPLATEPATH ) ) {

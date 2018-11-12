@@ -33,6 +33,7 @@ class QueryEngine extends \FLBuilderModule {
 	public function update( $settings ) {
 	    $settings->atts = array(
 	    	'post_type'      => isset( $settings->post_type ) ? $settings->post_type : null,
+	    	'context'        => isset( $settings->context ) ? $settings->context : null,
 	    	'template'       => isset( $settings->template ) ? $settings->template : null,
 	    	'order'          => isset( $settings->order ) ? $settings->order : null,
 	    	'orderby'        => isset( $settings->orderby ) ? $settings->orderby : null,
@@ -127,6 +128,8 @@ class QueryEngine extends \FLBuilderModule {
 	    /**
 	     * Append our new atts attribute to the settings
 	     */
+	    $settings->atts = apply_filters( 'wp_query_bb_atts' , $settings->atts, $settings );
+
 	    return $settings;
 	}
 
@@ -171,7 +174,7 @@ class QueryEngine extends \FLBuilderModule {
 		// Add post type selection
 		$fields['post_type'] = array(
 			'type'          => 'select',
-			'label'         => __( 'Post Type', 'fl-builder'),
+			'label'         => __( 'Post Type', 'wp_query_engine'),
 			'default'       => 'post',
 			'options'       => array(
 				'any' => __( 'Any', 'wpcl_query_engine' ),
@@ -212,7 +215,7 @@ class QueryEngine extends \FLBuilderModule {
 				'action'        => 'fl_as_posts',
 				'data'          => $slug,
 				'label'         => $type->label,
-				'help'          => sprintf( __( 'Enter a list of %1$s.', 'fl-builder' ), $type->label ),
+				'help'          => sprintf( __( 'Enter a list of %1$s.', 'wp_query_engine' ), $type->label ),
 				'matching'      => true,
 				'preview'       => array(
 					'type'          => 'refresh',
@@ -233,7 +236,7 @@ class QueryEngine extends \FLBuilderModule {
 					'action'        => 'fl_as_terms',
 					'data'          => $tax_slug,
 					'label'         => $tax->label,
-					'help'          => sprintf( __( 'Enter a list of %1$s.', 'fl-builder' ), $tax->label ),
+					'help'          => sprintf( __( 'Enter a list of %1$s.', 'wp_query_engine' ), $tax->label ),
 					'matching'      => true,
 					'preview'       => array(
 						'type'          => 'refresh',
@@ -245,8 +248,8 @@ class QueryEngine extends \FLBuilderModule {
 		$fields['author'] = array(
 			'type'          => 'suggest',
 			'action'        => 'fl_as_users',
-			'label'         => __( 'Authors', 'fl-builder' ),
-			'help'          => __( 'Enter a list of authors usernames.', 'fl-builder' ),
+			'label'         => __( 'Authors', 'wp_query_engine' ),
+			'help'          => __( 'Enter a list of authors usernames.', 'wp_query_engine' ),
 			'matching'      => true,
 			'preview'       => array(
 				'type'          => 'refresh',
@@ -255,128 +258,182 @@ class QueryEngine extends \FLBuilderModule {
 		return $fields;
 	}
 
+	public function get_standard_fields() {
+			$fields = array(
+				'template'   => array(
+				    'type'          => 'select',
+				    'label'         => __('Template', 'wp_query_engine'),
+				    'default'       => '',
+				    'options'       => Utilities::get_template_names(),
+				    'preview'       => array(
+				    	'type'          => 'refresh',
+				    ),
+				    'toggle'        => array(),
+				),
+			);
+			// Allow template developers to add custom fields here
+			$fields = apply_filters( 'wp_query_engine_bb_template_fields', $fields );
+			// Add our default fields
+			$fields = array_merge( $fields, array(
+            	'context'       => array(
+            	    'type'          => 'text',
+            	    'label'         => __( 'Context', 'wp_query_engine' ),
+            	    'default'       => '',
+            	    'description'   => 'Query Context',
+            	    'help'          => 'Text string to identify this query. Is passed along to filters / actions to allow developers to target specific instances',
+            	    'preview'       => array(
+            	    	'type'          => 'refresh',
+            	    ),
+            	),
+            	'posts_per_page'       => array(
+            	    'type'          => 'text',
+            	    'label'         => __( 'Posts Per Page', 'wp_query_engine' ),
+            	    'default'       => get_option( 'posts_per_page' ),
+            	    'maxlength'     => '4',
+            	    'size'          => '5',
+            	    'description'   => 'Number of posts to display',
+            	    'help'          => 'The number of posts to display. If using pagination, the number of posts to display on each page. Use <em>-1</em> to display all.',
+            	    'preview'       => array(
+            	    	'type'          => 'refresh',
+            	    ),
+            	),
+            	'order' => array(
+    				'type'          => 'select',
+    				'label'         => __( 'Order', 'wp_query_engine' ),
+    				'default'       => 'DESC',
+    				'options'       => array(
+    					'DESC'          => __( 'Descending', 'wp_query_engine' ),
+    					'ASC'           => __( 'Ascending', 'wp_query_engine' ),
+    				),
+    				'preview'       => array(
+    					'type'          => 'refresh',
+    				),
+    			),
+        		'orderby' => array(
+        			'type'          => 'select',
+        			'default'       => 'date',
+        			'label'         => __( 'Order By', 'wp_query_engine' ),
+        			'options'       => array(
+        				'date'           => __( 'Date', 'wp_query_engine' ),
+        				'author'         => __( 'Author', 'wp_query_engine' ),
+        				'comment_count'  => __( 'Comment Count', 'wp_query_engine' ),
+        				'modified'       => __( 'Date Last Modified', 'wp_query_engine' ),
+        				'ID'             => __( 'ID', 'wp_query_engine' ),
+        				'menu_order'     => __( 'Menu Order', 'wp_query_engine' ),
+        				'meta_value'     => __( 'Meta Value (Alphabetical)', 'wp_query_engine' ),
+        				'meta_value_num' => __( 'Meta Value (Numeric)', 'wp_query_engine' ),
+        				'rand'        	 => __( 'Random', 'wp_query_engine' ),
+        				'title'          => __( 'Title', 'wp_query_engine' ),
+        			),
+        			'preview'       => array(
+        				'type'          => 'refresh',
+        			),
+        			'toggle'		=> array(
+        				'meta_value' 	=> array(
+        					'fields'		=> array( 'meta_key' ),
+        				),
+        				'meta_value_num' => array(
+        					'fields'		=> array( 'meta_key' ),
+        				),
+        			),
+            	),
+            	'meta_key' => array(
+    				'type'          => 'text',
+    				'label'         => __( 'Meta Key', 'wp_query_engine' ),
+    				'preview'       => array(
+    					'type'          => 'refresh',
+    				),
+    			),
+    			'offset' => array(
+					'type'          => 'text',
+					'label'         => _x( 'Offset', 'How many posts to skip.', 'wp_query_engine' ),
+					'default'       => '0',
+					'size'          => '4',
+					'help'          => __( 'Skip this many posts that match the specified criteria.', 'wp_query_engine' ),
+					'preview'       => array(
+						'type'          => 'refresh',
+					),
+				),
+            	'pagination'   => array(
+            	    'type'          => 'select',
+            	    'label'         => __('Use Pagination', 'wp_query_engine'),
+            	    'default'       => 'false',
+            	    'help'          => __( 'Use with caution, pagination will not work correctly in many cases', 'wp_query_engine' ),
+            	    'options'       => array(
+            	        'false'      => __('Disable', 'wp_query_engine'),
+            	        'true'      => __('Enable', 'wp_query_engine'),
+            	    ),
+            	    'preview'       => array(
+            	    	'type'          => 'refresh',
+            	    ),
+            	),
+            	'ignore_sticky_posts'   => array(
+            	    'type'          => 'select',
+            	    'label'         => __('Ignore Sticky Posts', 'wp_query_engine'),
+            	    'default'       => 'true',
+            	    'options'       => array(
+            	        'true'      => __('Enable', 'wp_query_engine'),
+            	        'false'      => __('Disable', 'wp_query_engine'),
+            	    ),
+            	    'preview'       => array(
+            	    	'type'          => 'refresh',
+            	    ),
+            	),
+			) );
+
+			return $fields;
+
+			return array(
+				'title'  => __('General Options', 'wp_query_engine'),
+				'fields' => array(),
+			);
+
+	}
+
 	/**
 	 * Register the module and its form settings.
 	 */
 	public function register_module() {
 		\FLBuilder::register_module( __CLASS__, array(
 			'general'       => array( // Tab
-			    'title'         => __('General', 'fl-builder'), // Tab title
+			    'title'         => __('General', 'wp_query_engine'), // Tab title
 			    'sections'      => array( // Tab Sections
 			        'general'       => array( // Section
-			            'title'         => __('General Options', 'fl-builder'), // Section Title
-			            'fields'        => array( // Section Fields
-			            	'template'   => array(
-			            	    'type'          => 'select',
-			            	    'label'         => __('Template', 'fl-builder'),
-			            	    'default'       => '',
-			            	    'options'       => Utilities::get_template_names(),
-			            	    'preview'       => array(
-			            	    	'type'          => 'refresh',
-			            	    ),
-			            	),
-			            	'posts_per_page'       => array(
-			            	    'type'          => 'text',
-			            	    'label'         => __( 'Posts Per Page', 'fl-builder' ),
-			            	    'default'       => get_option( 'posts_per_page' ),
-			            	    'maxlength'     => '4',
-			            	    'size'          => '5',
-			            	    'description'   => 'Number of posts to display',
-			            	    'help'          => 'The number of posts to display. If using pagination, the number of posts to display on each page. Use <em>-1</em> to display all.',
-			            	    'preview'       => array(
-			            	    	'type'          => 'refresh',
-			            	    ),
-			            	),
-			            	'order' => array(
-		        				'type'          => 'select',
-		        				'label'         => __( 'Order', 'fl-builder' ),
-		        				'default'       => 'DESC',
-		        				'options'       => array(
-		        					'DESC'          => __( 'Descending', 'fl-builder' ),
-		        					'ASC'           => __( 'Ascending', 'fl-builder' ),
-		        				),
-		        				'preview'       => array(
-		        					'type'          => 'refresh',
-		        				),
-		        			),
-		            		'orderby' => array(
-		            			'type'          => 'select',
-		            			'default'       => 'date',
-		            			'label'         => __( 'Order By', 'fl-builder' ),
-		            			'options'       => array(
-		            				'date'           => __( 'Date', 'fl-builder' ),
-		            				'author'         => __( 'Author', 'fl-builder' ),
-		            				'comment_count'  => __( 'Comment Count', 'fl-builder' ),
-		            				'modified'       => __( 'Date Last Modified', 'fl-builder' ),
-		            				'ID'             => __( 'ID', 'fl-builder' ),
-		            				'menu_order'     => __( 'Menu Order', 'fl-builder' ),
-		            				'meta_value'     => __( 'Meta Value (Alphabetical)', 'fl-builder' ),
-		            				'meta_value_num' => __( 'Meta Value (Numeric)', 'fl-builder' ),
-		            				'rand'        	 => __( 'Random', 'fl-builder' ),
-		            				'title'          => __( 'Title', 'fl-builder' ),
-		            			),
-		            			'preview'       => array(
-		            				'type'          => 'refresh',
-		            			),
-		            			'toggle'		=> array(
-		            				'meta_value' 	=> array(
-		            					'fields'		=> array( 'meta_key' ),
-		            				),
-		            				'meta_value_num' => array(
-		            					'fields'		=> array( 'meta_key' ),
-		            				),
-		            			),
-			            	),
-			            	'meta_key' => array(
-		        				'type'          => 'text',
-		        				'label'         => __( 'Meta Key', 'fl-builder' ),
-		        				'preview'       => array(
-		        					'type'          => 'refresh',
-		        				),
-		        			),
-		        			'offset' => array(
-								'type'          => 'text',
-								'label'         => _x( 'Offset', 'How many posts to skip.', 'fl-builder' ),
-								'default'       => '0',
-								'size'          => '4',
-								'help'          => __( 'Skip this many posts that match the specified criteria.', 'fl-builder' ),
+			            'title'         => __('General Options', 'wp_query_engine'), // Section Title
+			            'fields'        => $this->get_standard_fields(),
+			        ),
+			        'filter'       => array( // Section
+			            'title'         => __('Filters', 'wp_query_engine'), // Section Title
+			            'fields'        => $this->get_filter_fields(),
+			        ),
+			    )
+			),
+			'style'         => array( // Tab
+				'title'         => __( 'Style', 'wpcl_beaver_extender' ), // Tab title
+				'sections'      => array( // Tab Sections
+					'colors'        => array( // Section
+						'title'         => __( 'Colors', 'wpcl_beaver_extender' ), // Section Title
+						'fields'        => array( // Section Fields
+							'bg_color'      => array(
+								'type'          => 'color',
+								'label'         => __( 'Background Color', 'wpcl_beaver_extender' ),
+								'show_reset'    => true,
 								'preview'       => array(
 									'type'          => 'refresh',
 								),
 							),
-			            	'pagination'   => array(
-			            	    'type'          => 'select',
-			            	    'label'         => __('Use Pagination', 'fl-builder'),
-			            	    'default'       => 'false',
-			            	    'help'          => __( 'Use with caution, pagination will not work correctly in many cases', 'fl-builder' ),
-			            	    'options'       => array(
-			            	        'false'      => __('Disable', 'fl-builder'),
-			            	        'true'      => __('Enable', 'fl-builder'),
-			            	    ),
-			            	    'preview'       => array(
-			            	    	'type'          => 'refresh',
-			            	    ),
-			            	),
-			            	'ignore_sticky_posts'   => array(
-			            	    'type'          => 'select',
-			            	    'label'         => __('Ignore Sticky Posts', 'fl-builder'),
-			            	    'default'       => 'true',
-			            	    'options'       => array(
-			            	        'true'      => __('Enable', 'fl-builder'),
-			            	        'false'      => __('Disable', 'fl-builder'),
-			            	    ),
-			            	    'preview'       => array(
-			            	    	'type'          => 'refresh',
-			            	    ),
-			            	),
-			            )
-			        ),
-			        'filter'       => array( // Section
-			            'title'         => __('Filters', 'fl-builder'), // Section Title
-			            'fields'        => $this->get_filter_fields(),
-			        ),
-			    )
-			)
+							'padding' => array(
+								'type'        => 'dimension',
+								'label'       => 'Padding',
+								'description' => 'px',
+								'preview'       => array(
+									'type'          => 'refresh',
+								),
+							),
+						),
+					),
+				),
+			),
 		));
 	}
 }

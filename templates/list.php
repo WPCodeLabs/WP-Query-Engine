@@ -4,7 +4,7 @@
  * Function that will actually output the content, which can be filtered
  */
 if( !function_exists( 'wp_query_list_content' ) ) {
-	function wp_query_list_content( $template_name, $context, $wp_query, $atts ) {
+	function wp_query_list_content( $template_name, $context, $query, $atts ) {
 
 		$content = sprintf( '<li><a href="%s">%s</a></li>',
 			get_the_permalink(),
@@ -19,7 +19,7 @@ if( !function_exists( 'wp_query_list_content' ) ) {
  * Wrap the UL tag
  */
 if( !function_exists( 'wp_query_list_content_wrap_open' ) ) {
-	function wp_query_list_content_wrap_open( $template_name, $context, $wp_query, $atts ) {
+	function wp_query_list_content_wrap_open( $template_name, $context, $query, $atts ) {
 		echo '<ul class="wp_query_engine">';
 	}
 }
@@ -28,28 +28,7 @@ if( !function_exists( 'wp_query_list_content_wrap_open' ) ) {
  * Close the UL tag
  */
 if( !function_exists( 'wp_query_list_content_wrap_close' ) ) {
-	function wp_query_list_content_wrap_close( $template_name, $context, $wp_query, $atts ) {
+	function wp_query_list_content_wrap_close( $template_name, $context, $query, $atts ) {
 		echo '</ul>';
 	}
 }
-
-/**
- * Begin our main loop
- */
-do_action( 'wp_query_before_list_loop', $template_name, $context, $wp_query, $atts );
-
-if ( $wp_query->have_posts() ) :
-
-	do_action( 'wp_query_before_list_while', $template_name, $context, $wp_query, $atts );
-
-	while ( $wp_query->have_posts() ) : the_post();
-
-		do_action( 'wp_query_list_content', $template_name, $context, $wp_query, $atts );
-
-	endwhile;
-
-	do_action( 'wp_query_after_list_while', $template_name, $context, $wp_query, $atts );
-
-endif;
-
-do_action( 'wp_query_engine_after_list_loop', $template_name, $context, $wp_query, $atts );

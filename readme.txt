@@ -71,6 +71,9 @@ You can see the full documentation available at [https://docs.wpcodelabs.com/wp-
 
 
 == Changelog ==
+= 1.1.0 =
+- Provided default loop and filter to override inclusion of default loop, for easier templating
+
 
 = 1.0.1 =
 - Moved template action to class for easier override by templates
@@ -81,6 +84,6 @@ You can see the full documentation available at [https://docs.wpcodelabs.com/wp-
 = 1.0 =
 Initial Release
 
-== Arbitrary section ==
+== Notes ==
 
 This plugin is provided free, and while I will try to provide support to the best of my ability, I only have so much time to dedicate to supporting a free plugin. If you would like to contribute the this project directly, the main development is done at [GitHub](https://github.com/WPCodeLabs/WP-Query-Engine).

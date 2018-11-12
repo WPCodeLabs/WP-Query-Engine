@@ -35,6 +35,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 			'tax_query' => array(),
 			'meta_query' => array(),
 			'page_num' => !empty( get_query_var( 'page' ) ) ? get_query_var( 'page' ) : get_query_var( 'paged', 1 ),
+			'options' => array(),
 		);
 		return $default_atts;
 	}
@@ -46,6 +47,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 	 * @access private
 	 */
 	private static function normalize_atts( $atts = array() ) {
+		$atts_raw = $atts;
 		// Define default atts
 		$default_atts = self::get_default_attributes();
 		// initial merge
@@ -86,6 +88,12 @@ class Query extends \WPCL\QueryEngine\Plugin {
 		$atts['post__in']            = Utilities::string_to_ids( $atts['post__in'] );
 		$atts['post__not_in']        = Utilities::string_to_ids( $atts['post__not_in'] );
 
+		foreach( $atts_raw as $attribute => $value ) {
+			if( isset( $atts[$attribute] ) ) {
+				continue;
+			}
+			$atts['options'][$attribute] = $value;
+		}
 		// Return
 		return $atts;
 	}
@@ -112,7 +120,6 @@ class Query extends \WPCL\QueryEngine\Plugin {
 			'post__in' => $atts['post__in'],
 			'offset' => $atts['offset'],
 		);
-
 		// some conditionalls
 		if( isset( $atts['meta_key'] ) && ( $atts['orderby'] === 'meta_value' || $atts['orderby'] === 'meta_value_num' ) ) {
 			$query_args['meta_key'] = $atts['meta_key'];
@@ -149,6 +156,7 @@ class Query extends \WPCL\QueryEngine\Plugin {
 		}
 		$query_args['post__in'] = $atts['post__in'];
 		$query_args['post__not_in'] = $post__not_in;
+
 		// Run our main query maybe
 		$post_ids = get_posts( $query_args );
 		// Merge with sticky
@@ -195,50 +203,31 @@ class Query extends \WPCL\QueryEngine\Plugin {
 	}
 
 	public static function do_query( $atts ) {
-
-		// Normalize the atts
-		$atts = self::normalize_atts( $atts );
-
-		// Get the global query
-		global $wp_query;
-
-		// Set temporary variable to the global for restoration when we are done
-		$original_query = $wp_query;
-
 		// Allow atts to be prefilterd
 		$atts = apply_filters( 'wp_query_engine_args_raw', $atts );
+		// Normalize the atts
+		$atts = self::normalize_atts( $atts );
 		// Get query args
 		$query_args = apply_filters( 'wp_query_engine_args', self::get_query_args( $atts ) );
-
 		// Construct query
-		$wp_query = new \WP_Query( $query_args );
-
+		$query = new \WP_Query( $query_args );
 		// Do before output action
-		do_action( 'wp_query_engine_before_output', $wp_query, $atts );
-
+		do_action( 'wp_query_engine_before_output', $query, $atts );
 		// Context sensistive before action
 		if( !empty( $atts['context'] ) ) {
-			do_action( "wp_query_engine_before_{$atts['context']}", $wp_query, $atts );
+			do_action( "wp_query_engine_before_{$atts['context']}", $query, $atts );
 		}
-
 		// Do output action
-		do_action( 'wp_query_engine_output', $atts['template'], $atts['context'], $wp_query, $atts );
-
+		do_action( 'wp_query_engine_output', $atts['template'], $atts['context'], $query, $atts );
 		// Context sensistive after action
 		if( !empty( $atts['context'] ) ) {
-			do_action( "wp_query_engine_after_{$atts['context']}", $wp_query, $atts );
+			do_action( "wp_query_engine_after_{$atts['context']}", $query, $atts );
 		}
-
 		// Do after output action
-		do_action( 'wp_query_engine_after_output', $wp_query, $atts );
-
+		do_action( 'wp_query_engine_after_output', $query, $atts );
 		// Restore original Post Data
 		wp_reset_postdata();
-
 		// Restore the original query data
 		wp_reset_query();
-
-		// Reset Query
-		$wp_query = $original_query;
 	}
 } // end class
